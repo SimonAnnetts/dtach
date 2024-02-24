@@ -66,7 +66,7 @@ unlink_socket(void)
 }
 
 /* Signal */
-static RETSIGTYPE 
+static RETSIGTYPE
 die(int sig)
 {
 	/* Well, the child died. */
@@ -121,6 +121,13 @@ init_pty(char **argv, int statusfd)
 		return -1;
 	else if (the_pty.pid == 0)
 	{
+		/* create an empty history file */
+		if(scrollback==1)
+		{
+			FILE *file = fopen(scrollback_file, "w");
+			if (file) fclose(file);
+		}
+
 		/* Child.. Execute the program. */
 		execvp(*argv, argv);
 
@@ -266,6 +273,20 @@ pty_activity(int s)
 		exit(1);
 #endif
 
+	/* append data to our scrollback file */
+	if (scrollback==1 && len > 0)
+	{
+		if(buf[0] != 0x0c)
+		{
+			FILE *file = fopen(scrollback_file, "a");
+			if (file)
+			{
+				fwrite(buf, 1, len, file);
+				fclose(file);
+			}
+		}
+	}
+
 top:
 	/*
 	** Wait until at least one client is writable. Also wait on the control
@@ -371,7 +392,7 @@ client_activity(struct client *p)
 		*(p->pprev) = p->next;
 		free(p);
 		return;
-	} 
+	}
 
 	/* Push out data to the program. */
 	if (pkt.type == MSG_PUSH)

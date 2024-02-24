@@ -36,6 +36,9 @@ int detach_char = '\\' - 64;
 int no_suspend;
 /* The default redraw method. Initially set to unspecified. */
 int redraw_method = REDRAW_UNSPEC;
+/* The name of a scroll back file */
+char *scrollback_file;
+int scrollback = 0;
 
 /*
 ** The original terminal settings. Shared between the master and attach
@@ -78,6 +81,7 @@ usage()
 		"\t\t   ctrl_l: Send a Ctrl L character to the program.\n"
 		"\t\t    winch: Send a WINCH signal to the program.\n"
 		"  -z\t\tDisable processing of the suspend key.\n"
+		"  -s\t\tScrollback file.\n"
 		"\nReport any bugs to <" PACKAGE_BUGREPORT ">.\n",
 		PACKAGE_VERSION, __DATE__, __TIME__);
 	exit(0);
@@ -164,7 +168,7 @@ main(int argc, char **argv)
 				if (argc < 1)
 				{
 					printf("%s: No escape character "
-						"specified.\n", progname);	
+						"specified.\n", progname);
 					printf("Try '%s --help' for more "
 						"information.\n", progname);
 					return 1;
@@ -186,7 +190,7 @@ main(int argc, char **argv)
 				if (argc < 1)
 				{
 					printf("%s: No redraw method "
-						"specified.\n", progname);	
+						"specified.\n", progname);
 					printf("Try '%s --help' for more "
 						"information.\n", progname);
 					return 1;
@@ -200,11 +204,26 @@ main(int argc, char **argv)
 				else
 				{
 					printf("%s: Invalid redraw method "
-						"specified.\n", progname);	
+						"specified.\n", progname);
 					printf("Try '%s --help' for more "
 						"information.\n", progname);
 					return 1;
 				}
+				break;
+			}
+			else if (*p == 's')
+			{
+				++argv; --argc;
+				if (argc < 1)
+				{
+					printf("%s: No scrollback file "
+						"specified.\n", progname);
+					printf("Try '%s --help' for more "
+						"information.\n", progname);
+					return 1;
+				}
+				scrollback_file = *argv;
+				scrollback = 1;
 				break;
 			}
 			else

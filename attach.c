@@ -152,7 +152,7 @@ attach_main(int noerror)
 	fd_set readfds;
 	int s;
 
-	/* Attempt to open the socket. Don't display an error if noerror is 
+	/* Attempt to open the socket. Don't display an error if noerror is
 	** set. */
 	s = connect_socket(sockname);
 	if (s < 0 && errno == ENAMETOOLONG)
@@ -226,6 +226,20 @@ attach_main(int noerror)
 	pkt.len = redraw_method;
 	ioctl(0, TIOCGWINSZ, &pkt.u.ws);
 	write(s, &pkt, sizeof(struct packet));
+
+	if(scrollback==1)
+	{
+		//open the history file and write it to the terminal
+		FILE *file = fopen(scrollback_file, "r");
+		if (file) {
+			char line[BUFSIZE];
+			while (fgets(line, sizeof(line), file)) {
+				printf(EOS "%s", line);
+			}
+			fclose(file);
+			fflush(stdout);
+		}
+	}
 
 	/* Wait for things to happen */
 	while (1)
